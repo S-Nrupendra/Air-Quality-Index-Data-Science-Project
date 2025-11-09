@@ -114,3 +114,46 @@ if st.button("🔍 Predict AQI"):
     col1, col2 = st.columns(2)
     col1.metric(label="Predicted AQI", value=f"{predicted_aqi:.2f}")
     col2.markdown(f"### {emoji} Air Quality Category: **{bucket}**")
+
+# CSV UPLOAD PREDICTION
+st.markdown("---")
+st.markdown("## 📁 Batch Prediction from CSV")
+
+uploaded_file = st.file_uploader("Upload a CSV file with pollutant data", type=["csv"])
+
+if uploaded_file is not None:
+    try:
+        csv_data = pd.read_csv(uploaded_file)
+        st.success("✅ File uploaded successfully!")
+        st.dataframe(csv_data.head())
+
+        # Select model based on user choice
+        selected_features = features_with if model_choice == "With Xylene" else features_without
+        model = model_with if model_choice == "With Xylene" else model_without
+
+        # Keep only required columns
+        csv_data = csv_data[selected_features]
+
+        # Predict AQI for each row
+        predictions = model.predict(csv_data)
+        predictions = np.clip(predictions, 0, 500)
+
+        # Add AQI category
+        results = pd.DataFrame(csv_data)
+        results["Predicted_AQI"] = predictions
+        results["Category"] = [assign_aqi_bucket(aqi)[0] for aqi in predictions]
+
+        st.markdown("### ✅ Prediction Results")
+        st.dataframe(results.head(20))
+
+        # Download results
+        csv_download = results.to_csv(index=False).encode("utf-8")
+        st.download_button(
+            label="⬇️ Download Results as CSV",
+            data=csv_download,
+            file_name="predicted_aqi_results.csv",
+            mime="text/csv"
+        )
+
+    except Exception as e:
+        st.error(f"❌ Failed to process CSV: {e}")
