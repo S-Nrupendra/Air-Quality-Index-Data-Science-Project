@@ -3,14 +3,10 @@ import pandas as pd
 import numpy as np
 from xgboost import XGBRegressor
 
-# ---------------------------
-# 🌤️ PAGE CONFIGURATION
-# ---------------------------
+# PAGE CONFIGURATION
 st.set_page_config(page_title="AQI Prediction App", page_icon="🌫️", layout="centered")
 
-# ---------------------------
-# 🧠 UTILITY FUNCTIONS
-# ---------------------------
+# UTILITY FUNCTIONS
 
 def load_xgb_model(path):
     try:
@@ -35,9 +31,7 @@ def assign_aqi_bucket(aqi):
     else:
         return "Severe", "⚫"
 
-# ---------------------------
-# 🚀 LOAD MODELS
-# ---------------------------
+# LOAD MODELS
 
 model_with = load_xgb_model("best_model_With_Xylene.json")
 model_without = load_xgb_model("best_model_Without_Xylene.json")
@@ -48,9 +42,7 @@ if not all([model_with, model_without]):
 else:
     st.success("✅ Models loaded successfully!")
 
-# ---------------------------
-# 🧩 FEATURE DEFINITIONS
-# ---------------------------
+# FEATURE DEFINITIONS
 
 features_without = ['PM2.5', 'PM10', 'NO', 'NO2', 'NOx',
                     'NH3', 'CO', 'SO2', 'O3', 'Benzene', 'Toluene']
@@ -62,9 +54,7 @@ units = {
     'O3': 'µg/m³', 'Benzene': 'µg/m³', 'Toluene': 'µg/m³', 'Xylene': 'µg/m³'
 }
 
-# ---------------------------
-# 🎛️ APP INTERFACE
-# ---------------------------
+# APP INTERFACE
 st.title("🌫️ Air Quality Index (AQI) Prediction")
 st.markdown("Enter pollutant concentrations to predict **AQI** and its category.")
 
@@ -80,9 +70,7 @@ for i, feature in enumerate(selected_features):
     with cols[i % 3]:
         user_input[feature] = st.number_input(f"{feature} ({units[feature]})", min_value=0.0, step=0.01, format="%.2f")
 
-# ---------------------------
-# 🔮 PREDICTION
-# ---------------------------
+# PREDICTION
 if st.button("🔍 Predict AQI"):
     input_df = pd.DataFrame([user_input])
     expected_features = features_with if model_choice == "With Xylene" else features_without
